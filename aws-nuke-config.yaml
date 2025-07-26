@@ -1,15 +1,75 @@
+presets:
+  ignore-tag:
+      filters:
+        __global__:
+          - property: tag:ignore-nuke
+            value: "true"
+  sso:
+    filters:
+      IAMSAMLProvider:
+        - type: "regex"
+          value: "AWSSSO_.*_DO_NOT_DELETE"
+      IAMRole:
+        - type: "glob"
+          value: "AWSReservedSSO_*"
+      IAMRolePolicyAttachment:
+        - type: "glob"
+          value: "AWSReservedSSO_*"
+
+  saml:
+    filters:
+      IAMSAMLProvider:
+        - type: "glob"
+          value: "*saml-provider/AirWalkAzureAD"
+      IAMRole:
+        - "IdPLambdaExecutionRole"
+        - "Azure-AD-PowerUser-Role"
+        - "Azure-AD-Read-Only-Role"
+        - "Azure-AD-DBA-Role"
+        - "Azure-AD-Admin-Role"
+        - "AWS_IAM_AAD_UpdateTask_CrossAccountRole"
+        - "AWSCloudFormationStackSetExecutionRole"
+      IAMPolicy:
+        - type: "regex"
+          value: "arn:aws:iam::[[:digit:]]{12}:policy/IdPLambdaExecutionPolicy"
+        - type: "regex"
+          value: "arn:aws:iam::[[:digit:]]{12}:policy/CloudFormationStackSetExecutionRolePolicies"
+      IAMRolePolicyAttachment:
+        - "IdPLambdaExecutionRole -> IdPLambdaExecutionPolicy"
+        - "Azure-AD-Admin-Role -> AdministratorAccess"
+        - "Azure-AD-DBA-Role -> DatabaseAdministrator"
+        - "Azure-AD-PowerUser-Role -> PowerUserAccess"
+        - "Azure-AD-Read-Only-Role -> ViewOnlyAccess"
+        - "AWS_IAM_AAD_UpdateTask_CrossAccountRole -> IAMReadOnlyAccess"
+        - "AWSCloudFormationStackSetExecutionRole -> IAMFullAccess"
+        - "AWSCloudFormationStackSetExecutionRole -> AWSLambdaExecute"
+        - "AWSCloudFormationStackSetExecutionRole -> CloudFormationStackSetExecutionRolePolicies"
+      LambdaFunction:
+        - "IdPLambda"
+      CloudFormationStack:
+        - "AzureADFederationCrossAccountRoles"
+        - type: "glob"
+          value: "StackSet-IdpAndSamlRolesForAzureAdFederatedLogin*"
+
 regions:
   - global
   - eu-west-1
 
+blocklist:
+  - ""
+
+bypass-alias-check-accounts:
+  - ACCOUNT_ID
+
 accounts:
-  "ACCOUNT_ALIAS":
+  "ACCOUNT_ID":
     account-id: "ACCOUNT_ID"
+    presets:
+      - sso
+      - saml
+      - ignore-tag
     filters:
-      IAMRole:
-        - "AWSReservedSSO_.*"
-      IAMPolicy:
-        - "AWSReservedSSO_.*"
+      # 🔒 Protection complète des ressources Identity Center
       SSOInstance:
         - ".*"
       SSOAssignment:
@@ -18,5 +78,5 @@ accounts:
         - ".*"
       IAMIdentityProvider:
         - ".*"
-      tag:ignore-nuke=true:
-        - ".*"
+
+      

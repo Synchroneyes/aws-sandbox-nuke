@@ -45,10 +45,8 @@ jobs:
       - name: Replace Account ID and Alias in aws-nuke-config.yaml
         env:
           AWS_ACCOUNT_ID: ${{ secrets.AWS_ACCOUNT_IDS }}
-          AWS_ACCOUNT_ALIAS: ${{ secrets.AWS_ACCOUNT_ALIAS }}
         run: |
           sed -i "s/ACCOUNT_ID/${AWS_ACCOUNT_ID}/g" aws-nuke-config.yaml
-          sed -i "s/ACCOUNT_ALIAS/${AWS_ACCOUNT_ALIAS}/g" aws-nuke-config.yaml
 
       - name: Run aws-nuke
         run: |

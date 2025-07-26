@@ -54,8 +54,8 @@ jobs:
         run: |
           if [[ "${{ github.event.inputs.no-dry-run }}" == "true" ]]; then
             echo "⚠️ Running aws-nuke with --no-dry-run (real deletions)"
-            aws-nuke -c aws-nuke-config.yaml --no-dry-run
+            aws-nuke nuke -c aws-nuke-config.yaml --no-dry-run
           else
             echo "🔎 Running aws-nuke in dry-run mode (no deletions)"
-            aws-nuke -c aws-nuke-config.yaml
+            aws-nuke nuke -c aws-nuke-config.yaml
           fi

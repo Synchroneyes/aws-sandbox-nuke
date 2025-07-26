@@ -1,0 +1,58 @@
+name: AWS Nuke
+
+on:
+  workflow_dispatch:
+    inputs:
+      no-dry-run:
+        description: "Set to true to actually delete resources (BE CAREFUL)"
+        required: false
+        default: "false"
+
+jobs:
+  aws-nuke:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Install AWS CLI
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y awscli
+
+      - name: Install aws-nuke
+        run: |
+          wget https://github.com/rebuy-de/aws-nuke/releases/latest/download/aws-nuke-linux-amd64
+          chmod +x aws-nuke-linux-amd64
+          sudo mv aws-nuke-linux-amd64 /usr/local/bin/aws-nuke
+
+      - name: Setup AWS Credentials
+        env:
+          AWS_ACCESS_KEY_ID: ${{ secrets.AWS_ACCESS_KEY_ID }}
+          AWS_SECRET_KEY: ${{ secrets.AWS_SECRET_KEY }}
+        run: |
+          mkdir -p ~/.aws
+          echo "[default]" > ~/.aws/credentials
+          echo "aws_access_key_id=${AWS_ACCESS_KEY_ID}" >> ~/.aws/credentials
+          echo "aws_secret_access_key=${AWS_SECRET_KEY}" >> ~/.aws/credentials
+          echo "[default]" > ~/.aws/config
+          echo "region=eu-west-1" >> ~/.aws/config
+
+      - name: Replace Account ID and Alias in aws-nuke-config.yaml
+        env:
+          AWS_ACCOUNT_ID: ${{ secrets.AWS_ACCOUNT_IDS }}
+          AWS_ACCOUNT_ALIAS: ${{ secrets.AWS_ACCOUNT_ALIAS }}
+        run: |
+          sed -i "s/ACCOUNT_ID/${AWS_ACCOUNT_ID}/g" aws-nuke-config.yaml
+          sed -i "s/ACCOUNT_ALIAS/${AWS_ACCOUNT_ALIAS}/g" aws-nuke-config.yaml
+
+      - name: Run aws-nuke
+        run: |
+          if [[ "${{ github.event.inputs.no-dry-run }}" == "true" ]]; then
+            echo "⚠️ Running aws-nuke with --no-dry-run (real deletions)"
+            aws-nuke -c aws-nuke-config.yaml --no-dry-run
+          else
+            echo "🔎 Running aws-nuke in dry-run mode (no deletions)"
+            aws-nuke -c aws-nuke-config.yaml
+          fi

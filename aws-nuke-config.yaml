@@ -1,0 +1,22 @@
+regions:
+  - global
+  - eu-west-1
+
+accounts:
+  "ACCOUNT_ALIAS":
+    account-id: "ACCOUNT_ID"
+    filters:
+      IAMRole:
+        - "AWSReservedSSO_.*"
+      IAMPolicy:
+        - "AWSReservedSSO_.*"
+      SSOInstance:
+        - ".*"
+      SSOAssignment:
+        - ".*"
+      SSOPermissionSet:
+        - ".*"
+      IAMIdentityProvider:
+        - ".*"
+      tag:ignore-nuke=true:
+        - ".*"

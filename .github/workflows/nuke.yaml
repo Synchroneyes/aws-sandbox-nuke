@@ -16,10 +16,12 @@ jobs:
       - name: Checkout repository
         uses: actions/checkout@v4
 
-      - name: Install AWS CLI
+      - name: Install AWS CLI via pip
         run: |
           sudo apt-get update
-          sudo apt-get install -y awscli
+          sudo apt-get install -y python3-pip unzip
+          pip3 install --upgrade awscli
+
 
       - name: Install aws-nuke
         run: |

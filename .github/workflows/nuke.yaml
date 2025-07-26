@@ -25,9 +25,10 @@ jobs:
 
       - name: Install aws-nuke
         run: |
-          wget https://github.com/rebuy-de/aws-nuke/releases/latest/download/aws-nuke-linux-amd64
-          chmod +x aws-nuke-linux-amd64
-          sudo mv aws-nuke-linux-amd64 /usr/local/bin/aws-nuke
+          wget https://github.com/ekristen/aws-nuke/releases/download/v3.56.2/aws-nuke-v3.56.2-linux-amd64.tar.gz
+          tar -xzf aws-nuke-v3.56.2-linux-amd64.tar.gz
+          chmod +x aws-nuke
+          sudo mv aws-nuke /usr/local/bin/aws-nuke
 
       - name: Setup AWS Credentials
         env:

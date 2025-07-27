@@ -81,7 +81,7 @@ aws-nuke nuke -c aws-nuke-config.yaml --no-dry-run --no-alias-check --force
 
 ### Testing Notifications
 
-You can manually trigger the notification workflow using the curl command from [Untitled-1](Untitled-1):
+You can manually trigger the notification workflow using the curl command:
 
 ```bash
 curl -X POST \

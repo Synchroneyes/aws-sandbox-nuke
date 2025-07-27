@@ -6,8 +6,8 @@ on:
       no-dry-run:
         description: "Check to actually delete resources (BE CAREFUL)"
         required: false
-        default: "false"
-        type: string
+        default: false
+        type: boolean
 
 jobs:
   aws-nuke:
@@ -56,6 +56,7 @@ jobs:
           else
             echo "🔎 Running aws-nuke in dry-run mode (no deletions)"
             aws-nuke nuke -c aws-nuke-config.yaml --no-alias-check --force
+          fi
 
   notify:
     needs: aws-nuke

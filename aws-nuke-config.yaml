@@ -69,7 +69,8 @@ accounts:
       - saml
       - ignore-tag
     filters:
-      # 🔒 Protection complète des ressources Identity Center
+      IAMRolePolicyAttachment:
+        - "aws-nuke-github -> AdministratorAccess"
       SSOInstance:
         - ".*"
       SSOAssignment:

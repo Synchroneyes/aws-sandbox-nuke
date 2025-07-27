@@ -4,6 +4,8 @@ on:
   schedule:
     - cron: '0 22 * * *' # Midnight Paris time (UTC+2/UTC+1)
   workflow_dispatch:
+  repository_dispatch:
+    types: [nuke]
 
 
 jobs:

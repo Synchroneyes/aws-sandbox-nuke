@@ -72,7 +72,7 @@ accounts:
       IAMRolePolicyAttachment:
         - "aws-nuke-github -> AdministratorAccess"
       IAMAccessKey:
-        - user-name: "aws-nuke-github"
+        - "aws-nuke-github"
       SSOInstance:
         - ".*"
       SSOAssignment:

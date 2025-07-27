@@ -4,7 +4,7 @@ on:
   workflow_dispatch:
     inputs:
       no-dry-run:
-        description: "Set to true to actually delete resources (BE CAREFUL)"
+        description: "Check to actually delete resources (BE CAREFUL)"
         required: false
         default: false
         type: boolean

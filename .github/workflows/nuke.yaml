@@ -23,7 +23,6 @@ jobs:
           sudo apt-get install -y python3-pip unzip
           pip3 install --upgrade awscli
 
-
       - name: Install aws-nuke
         run: |
           wget https://github.com/ekristen/aws-nuke/releases/download/v3.56.2/aws-nuke-v3.56.2-linux-amd64.tar.gz
@@ -57,4 +56,18 @@ jobs:
           else
             echo "🔎 Running aws-nuke in dry-run mode (no deletions)"
             aws-nuke nuke -c aws-nuke-config.yaml --no-alias-check --force
-          fi
+
+  notify:
+    needs: aws-nuke
+    runs-on: ubuntu-latest
+    if: always()
+    steps:
+      - name: Trigger pushover-notification workflow
+        uses: peter-evans/workflow-dispatch@v1
+        with:
+          token: ${{ secrets.SECRET_GITHUB }}
+          repository: ${{ github.repository }}
+          workflow: pushover-notification.yaml
+          ref: ${{ github.ref }}
+          inputs: |
+            failed=${{ needs.aws-nuke.result == 'failure' }}

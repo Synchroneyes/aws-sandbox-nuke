@@ -1,0 +1,36 @@
+name: "Notify Pushover on AWS Nuke Execution"
+
+on:
+  workflow_dispatch:
+    inputs:
+      failed:
+        description: 'Did the execution fail?'
+        required: true
+        default: 'false'
+        type: choice
+        options:
+          - 'true'
+          - 'false'
+
+jobs:
+  send_pushover_notification:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Send Pushover Notification
+        env:
+          PUSHOVER_USER_KEY: ${{ secrets.PUSHOVER_USER_KEY }}
+          PUSHOVER_API_TOKEN: ${{ secrets.PUSHOVER_API_TOKEN }}
+        run: |
+          if [ "${{ github.event.inputs.failed }}" = "true" ]; then
+            MESSAGE="❌ AWS Nuke Sandbox FAILED on ${{ github.repository }} by ${{ github.actor }}"
+            TITLE="❌ AWS Nuke Sandbox Failure 💥"
+          else
+            MESSAGE="✅ AWS Nuke Sandbox SUCCEEDED on ${{ github.repository }} by ${{ github.actor }}"
+            TITLE="✅ AWS Nuke Sandbox Success"
+          fi
+          curl -s \
+            -F "token=${PUSHOVER_API_TOKEN}" \
+            -F "user=${PUSHOVER_USER_KEY}" \
+            -F "title=${TITLE}" \
+            -F "message=${MESSAGE}" \
+            https://api.pushover.net/1/messages.json

@@ -6,7 +6,8 @@ on:
       no-dry-run:
         description: "Set to true to actually delete resources (BE CAREFUL)"
         required: false
-        default: "false"
+        default: false
+        type: boolean
 
 jobs:
   aws-nuke:

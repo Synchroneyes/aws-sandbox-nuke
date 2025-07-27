@@ -16,7 +16,7 @@ on:
 
 jobs:
   trigger-nuke:
-    uses: Synchroneyes/aws-sandbox-nuke/.github/workflows/aws-nuke.yaml@main
+    uses: Synchroneyes/aws-sandbox-nuke/.github/workflows/nuke.yaml@main
     with:
       no-dry-run: ${{ github.event.inputs.no-dry-run || 'true' }}
     secrets:

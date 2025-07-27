@@ -4,21 +4,13 @@ on:
   schedule:
     - cron: '0 22 * * *' # Midnight Paris time (UTC+2/UTC+1)
   workflow_dispatch:
-    inputs:
-      no-dry-run:
-        description: 'Actually delete resources?'
-        required: false
-        default: 'true'
-        type: choice
-        options:
-          - 'true'
-          - 'false'
+
 
 jobs:
   trigger-nuke:
     uses: Synchroneyes/aws-sandbox-nuke/.github/workflows/nuke.yaml@main
     with:
-      no-dry-run: ${{ github.event.inputs.no-dry-run || 'true' }}
+      no-dry-run: true
     secrets:
       AWS_ACCESS_KEY_ID: ${{ secrets.AWS_ACCESS_KEY_ID }}
       AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_KEY }}

@@ -58,22 +58,22 @@ jobs:
             aws-nuke nuke -c aws-nuke-config.yaml --no-alias-check --force
 
   notify:
-  needs: aws-nuke
-  runs-on: ubuntu-latest
-  if: always()
-  steps:
-    - name: Trigger pushover-notification workflow
-      env:
-        GITHUB_TOKEN: ${{ secrets.SECRET_GITHUB }}
-        REPO: ${{ github.repository }}
-        BRANCH: ${{ github.ref }}
-        FAILED: ${{ needs.aws-nuke.result == 'failure' }}
-      run: |
-        curl -X POST \
-          -H "Authorization: token ${GITHUB_TOKEN}" \
-          -H "Accept: application/vnd.github.v3+json" \
-          https://api.github.com/repos/${REPO}/dispatches \
-          -d "$(jq -n \
-              --arg event_type "pushover-notification" \
-              --argjson client_payload "{\"failed\":$FAILED}" \
-              '{event_type: $event_type, client_payload: $client_payload}')"
+    needs: aws-nuke
+    runs-on: ubuntu-latest
+    if: always()
+    steps:
+      - name: Trigger pushover-notification workflow
+        env:
+          GITHUB_TOKEN: ${{ secrets.SECRET_GITHUB }}
+          REPO: ${{ github.repository }}
+          BRANCH: ${{ github.ref }}
+          FAILED: ${{ needs.aws-nuke.result == 'failure' }}
+        run: |
+          curl -X POST \
+            -H "Authorization: token ${GITHUB_TOKEN}" \
+            -H "Accept: application/vnd.github.v3+json" \
+            https://api.github.com/repos/${REPO}/dispatches \
+            -d "$(jq -n \
+                --arg event_type "pushover-notification" \
+                --argjson client_payload "{\"failed\":$FAILED}" \
+                '{event_type: $event_type, client_payload: $client_payload}')"

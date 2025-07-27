@@ -5,66 +5,16 @@ on:
     - cron: '0 22 * * *' # Midnight Paris time (UTC+2/UTC+1), UTC is 2 hours behind Paris time in summer, 1 in winter
 
 jobs:
-  aws-nuke:
+  trigger-nuke:
     runs-on: ubuntu-latest
-
     steps:
-      - name: Checkout repository
-        uses: actions/checkout@v4
-
-      - name: Install AWS CLI via pip
-        run: |
-          sudo apt-get update
-          sudo apt-get install -y python3-pip unzip
-          pip3 install --upgrade awscli
-
-      - name: Install aws-nuke
-        run: |
-          wget https://github.com/ekristen/aws-nuke/releases/download/v3.56.2/aws-nuke-v3.56.2-linux-amd64.tar.gz
-          tar -xzf aws-nuke-v3.56.2-linux-amd64.tar.gz
-          chmod +x aws-nuke
-          sudo mv aws-nuke /usr/local/bin/aws-nuke
-
-      - name: Setup AWS Credentials
+      - name: Trigger AWS Nuke On Demand workflow
         env:
-          AWS_ACCESS_KEY_ID: ${{ secrets.AWS_ACCESS_KEY_ID }}
-          AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_KEY }}
-        run: |
-          mkdir -p ~/.aws
-          echo "[default]" > ~/.aws/credentials
-          echo "aws_access_key_id=${AWS_ACCESS_KEY_ID}" >> ~/.aws/credentials
-          echo "aws_secret_access_key=${AWS_SECRET_ACCESS_KEY}" >> ~/.aws/credentials
-          echo "[default]" > ~/.aws/config
-          echo "region=eu-west-1" >> ~/.aws/config
-
-      - name: Replace Account ID in aws-nuke-config.yaml
-        env:
-          AWS_ACCOUNT_ID: ${{ secrets.AWS_ACCOUNT_IDS }}
-        run: |
-          sed -i "s/ACCOUNT_ID/${AWS_ACCOUNT_ID}/g" aws-nuke-config.yaml
-
-      - name: Run aws-nuke
-        run: |
-          echo "⚠️ Running aws-nuke with --no-dry-run (real deletions)"
-          aws-nuke nuke -c aws-nuke-config.yaml --no-dry-run --no-alias-check --force
-
-
-  notify:
-    needs: aws-nuke
-    runs-on: ubuntu-latest
-    if: always()
-    steps:
-      - name: Trigger pushover-notification workflow
-        env:
-          GITHUB_TOKEN: ${{ secrets.SECRET_GITHUB }}
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
           REPO: ${{ github.repository }}
-          FAILED: ${{ needs.aws-nuke.result == 'failure' }}
         run: |
           curl -X POST \
             -H "Authorization: token ${GITHUB_TOKEN}" \
             -H "Accept: application/vnd.github.v3+json" \
-            https://api.github.com/repos/${REPO}/dispatches \
-            -d "$(jq -n \
-                --arg event_type "pushover-notification" \
-                --argjson client_payload "{\"failed\":$FAILED}" \
-                '{event_type: $event_type, client_payload: $client_payload}')"
+            https://api.github.com/repos/${REPO}/actions/workflows/nuke.yaml/dispatches \
+            -d '{"ref":"main","inputs":{"no-dry-run":"true"}}'

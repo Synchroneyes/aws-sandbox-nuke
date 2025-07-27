@@ -69,7 +69,7 @@ accounts:
       - saml
       - ignore-tag
     filters:
-      IAMRolePolicyAttachment:
+      IAMUserPolicyAttachment:
         - "aws-nuke-github -> AdministratorAccess"
       IAMAccessKey:
         - "aws-nuke-github"

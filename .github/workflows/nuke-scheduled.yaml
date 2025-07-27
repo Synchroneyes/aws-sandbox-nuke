@@ -2,19 +2,25 @@ name: AWS Nuke Scheduled
 
 on:
   schedule:
-    - cron: '0 22 * * *' # Midnight Paris time (UTC+2/UTC+1), UTC is 2 hours behind Paris time in summer, 1 in winter
+    - cron: '0 22 * * *' # Midnight Paris time (UTC+2/UTC+1)
+  workflow_dispatch:
+    inputs:
+      no-dry-run:
+        description: 'Actually delete resources?'
+        required: false
+        default: 'true'
+        type: choice
+        options:
+          - 'true'
+          - 'false'
 
 jobs:
   trigger-nuke:
-    runs-on: ubuntu-latest
-    steps:
-      - name: Trigger AWS Nuke On Demand workflow
-        env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-          REPO: ${{ github.repository }}
-        run: |
-          curl -X POST \
-            -H "Authorization: token ${GITHUB_TOKEN}" \
-            -H "Accept: application/vnd.github.v3+json" \
-            https://api.github.com/repos/${REPO}/actions/workflows/nuke.yaml/dispatches \
-            -d '{"ref":"main","inputs":{"no-dry-run":"true"}}'
+    uses: Synchroneyes/aws-sandbox-nuke/.github/workflows/aws-nuke.yaml@main
+    with:
+      no-dry-run: ${{ github.event.inputs.no-dry-run || 'true' }}
+    secrets:
+      AWS_ACCESS_KEY_ID: ${{ secrets.AWS_ACCESS_KEY_ID }}
+      AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_KEY }}
+      AWS_ACCOUNT_IDS: ${{ secrets.AWS_ACCOUNT_IDS }}
+      SECRET_GITHUB: ${{ secrets.SECRET_GITHUB }}

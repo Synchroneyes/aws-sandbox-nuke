@@ -28,16 +28,16 @@ jobs:
       - name: Setup AWS Credentials
         env:
           AWS_ACCESS_KEY_ID: ${{ secrets.AWS_ACCESS_KEY_ID }}
-          AWS_SECRET_KEY: ${{ secrets.AWS_SECRET_KEY }}
+          AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_KEY }}
         run: |
           mkdir -p ~/.aws
           echo "[default]" > ~/.aws/credentials
           echo "aws_access_key_id=${AWS_ACCESS_KEY_ID}" >> ~/.aws/credentials
-          echo "aws_secret_access_key=${AWS_SECRET_KEY}" >> ~/.aws/credentials
+          echo "aws_secret_access_key=${AWS_SECRET_ACCESS_KEY}" >> ~/.aws/credentials
           echo "[default]" > ~/.aws/config
           echo "region=eu-west-1" >> ~/.aws/config
 
-      - name: Replace Account ID and Alias in aws-nuke-config.yaml
+      - name: Replace Account ID in aws-nuke-config.yaml
         env:
           AWS_ACCOUNT_ID: ${{ secrets.AWS_ACCOUNT_IDS }}
         run: |
@@ -47,3 +47,24 @@ jobs:
         run: |
           echo "⚠️ Running aws-nuke with --no-dry-run (real deletions)"
           aws-nuke nuke -c aws-nuke-config.yaml --no-dry-run --no-alias-check --force
+
+
+  notify:
+    needs: aws-nuke
+    runs-on: ubuntu-latest
+    if: always()
+    steps:
+      - name: Trigger pushover-notification workflow
+        env:
+          GITHUB_TOKEN: ${{ secrets.SECRET_GITHUB }}
+          REPO: ${{ github.repository }}
+          FAILED: ${{ needs.aws-nuke.result == 'failure' }}
+        run: |
+          curl -X POST \
+            -H "Authorization: token ${GITHUB_TOKEN}" \
+            -H "Accept: application/vnd.github.v3+json" \
+            https://api.github.com/repos/${REPO}/dispatches \
+            -d "$(jq -n \
+                --arg event_type "pushover-notification" \
+                --argjson client_payload "{\"failed\":$FAILED}" \
+                '{event_type: $event_type, client_payload: $client_payload}')"

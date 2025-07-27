@@ -16,7 +16,7 @@ on:
 
 jobs:
   send_pushover_notification:
-    runs-on: self-hosted
+    runs-on: ubuntu-latest
     steps:
       - name: Send Pushover Notification
         env:

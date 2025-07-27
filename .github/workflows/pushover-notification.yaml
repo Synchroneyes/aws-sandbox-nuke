@@ -11,6 +11,8 @@ on:
         options:
           - 'true'
           - 'false'
+  repository_dispatch:
+    types: [pushover-notification]
 
 jobs:
   send_pushover_notification:
@@ -21,13 +23,21 @@ jobs:
           PUSHOVER_USER_KEY: ${{ secrets.PUSHOVER_USER_KEY }}
           PUSHOVER_API_TOKEN: ${{ secrets.PUSHOVER_API_TOKEN }}
         run: |
-          if [ "${{ github.event.inputs.failed }}" = "true" ]; then
+          FAILED=false
+          if [[ "${{ github.event_name }}" == "workflow_dispatch" ]]; then
+            FAILED="${{ github.event.inputs.failed }}"
+          elif [[ "${{ github.event_name }}" == "repository_dispatch" ]]; then
+            FAILED="${{ github.event.client_payload.failed }}"
+          fi
+
+          if [ "$FAILED" = "true" ]; then
             MESSAGE="❌ AWS Nuke Sandbox FAILED on ${{ github.repository }} by ${{ github.actor }}"
             TITLE="❌ AWS Nuke Sandbox Failure 💥"
           else
             MESSAGE="✅ AWS Nuke Sandbox SUCCEEDED on ${{ github.repository }} by ${{ github.actor }}"
             TITLE="✅ AWS Nuke Sandbox Success"
           fi
+
           curl -s \
             -F "token=${PUSHOVER_API_TOKEN}" \
             -F "user=${PUSHOVER_USER_KEY}" \

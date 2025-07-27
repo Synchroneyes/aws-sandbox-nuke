@@ -1,13 +1,8 @@
-name: AWS Nuke On Demand
+name: AWS Nuke Scheduled
 
 on:
-  workflow_dispatch:
-    inputs:
-      no-dry-run:
-        description: "Check to actually delete resources (BE CAREFUL)"
-        required: false
-        default: false
-        type: boolean
+  schedule:
+    - cron: '0 22 * * *' # Midnight Paris time (UTC+2/UTC+1), UTC is 2 hours behind Paris time in summer, 1 in winter
 
 jobs:
   aws-nuke:
@@ -22,7 +17,6 @@ jobs:
           sudo apt-get update
           sudo apt-get install -y python3-pip unzip
           pip3 install --upgrade awscli
-
 
       - name: Install aws-nuke
         run: |
@@ -51,10 +45,5 @@ jobs:
 
       - name: Run aws-nuke
         run: |
-          if [[ "${{ github.event.inputs.no-dry-run }}" == "true" ]]; then
-            echo "⚠️ Running aws-nuke with --no-dry-run (real deletions)"
-            aws-nuke nuke -c aws-nuke-config.yaml --no-dry-run --no-alias-check --force
-          else
-            echo "🔎 Running aws-nuke in dry-run mode (no deletions)"
-            aws-nuke nuke -c aws-nuke-config.yaml --no-alias-check --force
-          fi
+          echo "⚠️ Running aws-nuke with --no-dry-run (real deletions)"
+          aws-nuke nuke -c aws-nuke-config.yaml --no-dry-run --no-alias-check --force
